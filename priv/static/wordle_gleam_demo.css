@@ -1,0 +1,136 @@
+body {
+    background-color: black;
+    overflow: hidden;
+}
+
+.container {
+    height: 100vh;
+    width: 100vw;
+    outline: none;
+    display: flex;
+    justify-content: center;
+}
+
+.grid_row {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 1.5px;
+}
+
+.grid_letter_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 1.5em;
+    width: 1.5em;
+    margin: 3px;
+    border: 3px solid;
+    border-color: #3a3a3c;
+    font-size: 3em;
+    font-family: sans-serif;
+    font-weight: bold;
+    color: white;
+}
+
+.wrong_pos {
+    background-color: #b59f3b;
+    border-color: #b59f3b;
+}
+
+.correct {
+    background-color: #538d4e;
+    border-color: #538d4e;
+}
+
+.wrong {
+    background-color: #3a3a3c;
+}
+
+.overlay {
+    z-index: 10;
+    position: absolute;
+    top: 10px;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
+.notification-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: black;
+    font-size: 1.25em;
+    font-family: sans-serif;
+    font-weight: bold;
+    width: 10rem;
+    padding: 10px 0;
+    border-radius: 5px;
+    animation-duration: 1.5s;
+    animation-name: in-out;
+    opacity: 0;
+}
+
+.end-game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color: white;
+    font-size: 1.25em;
+    font-family: sans-serif;
+    font-weight: bold;
+    width: 20rem;
+    padding: 10px 0;
+}
+
+.ease-in {
+    animation-duration: 0.5s;
+    animation-name: ease-in;
+}
+
+.ease-out {
+    animation-duration: 0.5s;
+    animation-name: ease-out;
+}
+
+@keyframes in-out {
+    0% {
+        opacity: 0; 
+    }
+
+    25% {
+        opacity: 1
+    }
+
+    75% {
+        opacity: 1
+    }
+  
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes ease-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ease-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
