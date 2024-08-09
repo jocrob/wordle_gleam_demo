@@ -3451,7 +3451,7 @@ function get_alpha(input) {
     throw makeError(
       "assignment_no_match",
       "components/word_grid",
-      103,
+      96,
       "get_alpha",
       "Assignment pattern did not match",
       { value: $ }
@@ -3690,7 +3690,7 @@ function main() {
     throw makeError(
       "assignment_no_match",
       "wordle_gleam_demo",
-      29,
+      23,
       "main",
       "Assignment pattern did not match",
       { value: $ }
