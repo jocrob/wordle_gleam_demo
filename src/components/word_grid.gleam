@@ -1,4 +1,8 @@
+import components/keyboard.{keyboard}
+import gleam/dict.{type Dict}
+import gleam/io
 import gleam/list
+import gleam/pair
 import gleam/regex
 import gleam/string
 import lustre/attribute
@@ -6,9 +10,10 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import shared.{
-  type GridLetter, type Model, type Msg, Closed, Correct, ErrorDelayFinished,
-  GridLetter, Lost, Model, Open, Pending, Playing, UserSentGameInput, Won, Wrong,
-  WrongPos, delay, guess_max, not_word_err, too_short_err,
+  type GridLetter, type LetterStatus, type Model, type Msg, Closed, Correct,
+  ErrorDelayFinished, GridLetter, Lost, Model, Open, Pending, Playing,
+  UserSentGameInput, Won, Wrong, WrongPos, delay, guess_max, not_word_err,
+  too_short_err,
 }
 
 pub fn update_grid(
@@ -60,11 +65,14 @@ fn handle_guess(model: Model) {
         False, tries if tries == guess_max -> Lost
         _, _ -> Playing
       }
+      let checked_guess =
+        calculate_guess(model.guesses, model.guess, model.word)
       Model(
         ..model,
         guess: "",
-        guesses: add_new_guess(model.guesses, model.guess, model.word),
+        guesses: checked_guess |> fn(g) { [g] } |> list.append(model.guesses, _),
         game_state: state,
+        used_letters: update_letters(checked_guess, model.used_letters),
         end_game_modal: case state {
           Playing -> Closed
           _ -> Open
@@ -77,7 +85,7 @@ fn handle_guess(model: Model) {
   }
 }
 
-fn add_new_guess(guesses: List(List(GridLetter)), guess: String, word: String) {
+fn calculate_guess(guesses: List(List(GridLetter)), guess: String, word: String) {
   let guess_letters = string.to_graphemes(guess)
   let word_letters = string.to_graphemes(word)
 
@@ -88,8 +96,23 @@ fn add_new_guess(guesses: List(List(GridLetter)), guess: String, word: String) {
       _, _, _ -> GridLetter(letter: g, status: Wrong)
     }
   })
-  |> fn(g) { [g] }
-  |> list.append(guesses, _)
+}
+
+fn update_letters(
+  guess: List(GridLetter),
+  used_letters: Dict(String, LetterStatus),
+) {
+  list.fold(guess, used_letters, fn(res, guess_letter) {
+    case dict.get(res, guess_letter.letter) {
+      Ok(status) ->
+        case guess_letter.status, status {
+          _, Correct -> res
+          Wrong, WrongPos -> res
+          _, _ -> dict.insert(res, guess_letter.letter, guess_letter.status)
+        }
+      Error(_) -> dict.insert(res, guess_letter.letter, guess_letter.status)
+    }
+  })
 }
 
 fn get_alpha(input: String) {
@@ -98,19 +121,6 @@ fn get_alpha(input: String) {
   case regex.check(re, letter) {
     True -> letter
     False -> ""
-  }
-}
-
-fn notification(error: String) -> element.Element(Msg) {
-  case error != "" {
-    True -> {
-      html.div([attribute.class("overlay")], [
-        html.div([attribute.class("notification-container")], [
-          element.text(error),
-        ]),
-      ])
-    }
-    False -> element.none()
   }
 }
 
@@ -153,7 +163,7 @@ pub fn word_grid(model: Model) -> element.Element(Msg) {
               g_letter.status
             {
               Correct -> [attribute.class("correct")]
-              WrongPos -> [attribute.class("wrong_pos")]
+              WrongPos -> [attribute.class("wrong-pos")]
               Wrong -> [attribute.class("wrong")]
               _ -> []
             }),
@@ -162,6 +172,6 @@ pub fn word_grid(model: Model) -> element.Element(Msg) {
         }),
       )
     })
-      |> list.prepend(notification(model.error)),
+      |> list.append([keyboard(model)]),
   )
 }

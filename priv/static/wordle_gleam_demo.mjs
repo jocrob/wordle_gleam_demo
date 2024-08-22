@@ -172,8 +172,8 @@ function isEqual(x, y) {
       } catch {
       }
     }
-    let [keys2, get3] = getters(a);
-    for (let k of keys2(a)) {
+    let [keys3, get3] = getters(a);
+    for (let k of keys3(a)) {
       values.push(get3(a, k), get3(b, k));
     }
   }
@@ -374,9 +374,9 @@ function hashObject(o) {
       h = h + hashMerge(getHash(v), getHash(k)) | 0;
     });
   } else {
-    const keys2 = Object.keys(o);
-    for (let i = 0; i < keys2.length; i++) {
-      const k = keys2[i];
+    const keys3 = Object.keys(o);
+    for (let i = 0; i < keys3.length; i++) {
+      const k = keys3[i];
       const v = o[k];
       h = h + hashMerge(getHash(v), hashString(k)) | 0;
     }
@@ -872,10 +872,10 @@ var Dict = class _Dict {
    * @returns {Dict<string,V>}
    */
   static fromObject(o) {
-    const keys2 = Object.keys(o);
+    const keys3 = Object.keys(o);
     let m = _Dict.new();
-    for (let i = 0; i < keys2.length; i++) {
-      const k = keys2[i];
+    for (let i = 0; i < keys3.length; i++) {
+      const k = keys3[i];
       m = m.set(k, o[k]);
     }
     return m;
@@ -1065,6 +1065,9 @@ function lowercase(string3) {
 function uppercase(string3) {
   return string3.toUpperCase();
 }
+function split(xs, pattern) {
+  return List.fromArray(xs.split(pattern));
+}
 function concat(xs) {
   let result = "";
   for (const x of xs) {
@@ -1100,6 +1103,12 @@ function random_uniform() {
   }
   return random_uniform_result;
 }
+function codepoint(int3) {
+  return new UtfCodepoint(int3);
+}
+function utf_codepoint_list_to_string(utf_codepoint_integer_list) {
+  return utf_codepoint_integer_list.toArray().map((x) => String.fromCodePoint(x.value)).join("");
+}
 function regex_check(regex, string3) {
   regex.lastIndex = 0;
   return regex.test(string3);
@@ -1134,12 +1143,18 @@ function regex_scan(regex, string3) {
   });
   return List.fromArray(matches);
 }
+function new_map() {
+  return Dict.new();
+}
 function map_get(map6, key) {
   const value = map6.get(key, NOT_FOUND);
   if (value === NOT_FOUND) {
     return new Error(Nil);
   }
   return new Ok(value);
+}
+function map_insert(key, value, map6) {
+  return map6.set(key, value);
 }
 function classify_dynamic(data) {
   if (typeof data === "string") {
@@ -1287,6 +1302,25 @@ function inspectUtfCodepoint(codepoint2) {
   return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/dict.mjs
+function new$() {
+  return new_map();
+}
+function get(from3, get3) {
+  return map_get(from3, get3);
+}
+function insert(dict, key, value) {
+  return map_insert(key, value, dict);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
 // build/dev/javascript/gleam_stdlib/gleam/float.mjs
 function floor2(x) {
   return floor(x);
@@ -1315,6 +1349,19 @@ function to_string2(x) {
 }
 function to_float(x) {
   return identity(x);
+}
+function compare(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = a < b;
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
 }
 function random(max) {
   let _pipe = random_uniform() * to_float(max);
@@ -1385,6 +1432,34 @@ function first(list2) {
     let x = list2.head;
     return new Ok(x);
   }
+}
+function do_filter_map(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list2 = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list2.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let x = list2.head;
+      let xs = list2.tail;
+      let new_acc = (() => {
+        let $ = fun(x);
+        if ($.isOk()) {
+          let x$1 = $[0];
+          return prepend(x$1, acc);
+        } else {
+          return acc;
+        }
+      })();
+      loop$list = xs;
+      loop$fun = fun;
+      loop$acc = new_acc;
+    }
+  }
+}
+function filter_map(list2, fun) {
+  return do_filter_map(list2, fun, toList([]));
 }
 function do_map(loop$list, loop$fun, loop$acc) {
   while (true) {
@@ -1515,9 +1590,6 @@ function do_append(loop$first, loop$second) {
 function append(first4, second2) {
   return do_append(reverse(first4), second2);
 }
-function prepend2(list2, item) {
-  return prepend(item, list2);
-}
 function reverse_and_prepend(loop$prefix, loop$suffix) {
   while (true) {
     let prefix = loop$prefix;
@@ -1549,6 +1621,31 @@ function do_concat(loop$lists, loop$acc) {
 function concat2(lists) {
   return do_concat(lists, toList([]));
 }
+function fold(loop$list, loop$initial, loop$fun) {
+  while (true) {
+    let list2 = loop$list;
+    let initial = loop$initial;
+    let fun = loop$fun;
+    if (list2.hasLength(0)) {
+      return initial;
+    } else {
+      let x = list2.head;
+      let rest$1 = list2.tail;
+      loop$list = rest$1;
+      loop$initial = fun(initial, x);
+      loop$fun = fun;
+    }
+  }
+}
+function fold_right(list2, initial, fun) {
+  if (list2.hasLength(0)) {
+    return initial;
+  } else {
+    let x = list2.head;
+    let rest$1 = list2.tail;
+    return fun(fold_right(rest$1, initial, fun), x);
+  }
+}
 function find_map(loop$haystack, loop$fun) {
   while (true) {
     let haystack = loop$haystack;
@@ -1568,6 +1665,28 @@ function find_map(loop$haystack, loop$fun) {
       }
     }
   }
+}
+function tail_recursive_range(loop$start, loop$stop, loop$acc) {
+  while (true) {
+    let start4 = loop$start;
+    let stop = loop$stop;
+    let acc = loop$acc;
+    let $ = compare(start4, stop);
+    if ($ instanceof Eq) {
+      return prepend(stop, acc);
+    } else if ($ instanceof Gt) {
+      loop$start = start4;
+      loop$stop = stop + 1;
+      loop$acc = prepend(stop, acc);
+    } else {
+      loop$start = start4;
+      loop$stop = stop - 1;
+      loop$acc = prepend(stop, acc);
+    }
+  }
+}
+function range(start4, stop) {
+  return tail_recursive_range(start4, stop, toList([]));
 }
 function do_repeat(loop$a, loop$times, loop$acc) {
   while (true) {
@@ -1637,8 +1756,14 @@ function nil_error(result) {
 function from_strings(strings) {
   return concat(strings);
 }
+function from_string2(string3) {
+  return identity(string3);
+}
 function to_string3(builder) {
   return identity(builder);
+}
+function split2(iodata, pattern) {
+  return split(iodata, pattern);
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/dynamic.mjs
@@ -1899,6 +2024,32 @@ function drop_right(string3, num_graphemes) {
     return slice(string3, 0, length3(string3) - num_graphemes);
   }
 }
+function split3(x, substring) {
+  if (substring === "") {
+    return graphemes(x);
+  } else {
+    let _pipe = x;
+    let _pipe$1 = from_string2(_pipe);
+    let _pipe$2 = split2(_pipe$1, substring);
+    return map2(_pipe$2, to_string3);
+  }
+}
+function utf_codepoint(value) {
+  if (value > 1114111) {
+    let i = value;
+    return new Error(void 0);
+  } else if (value === 65534) {
+    return new Error(void 0);
+  } else if (value === 65535) {
+    return new Error(void 0);
+  } else if (value >= 55296 && value <= 57343) {
+    let i = value;
+    return new Error(void 0);
+  } else {
+    let i = value;
+    return new Ok(codepoint(i));
+  }
+}
 function inspect2(term) {
   let _pipe = inspect(term);
   return to_string3(_pipe);
@@ -2078,6 +2229,13 @@ var Element = class extends CustomType {
     this.void = void$;
   }
 };
+var Fragment = class extends CustomType {
+  constructor(elements, key) {
+    super();
+    this.elements = elements;
+    this.key = key;
+  }
+};
 var Attribute = class extends CustomType {
   constructor(x0, x1, as_property) {
     super();
@@ -2100,6 +2258,20 @@ function attribute(name, value) {
 }
 function on(name, handler) {
   return new Event("on" + name, handler);
+}
+function style(properties) {
+  return attribute(
+    "style",
+    fold(
+      properties,
+      "",
+      (styles, _use1) => {
+        let name$1 = _use1[0];
+        let value$1 = _use1[1];
+        return styles + name$1 + ":" + value$1 + ";";
+      }
+    )
+  );
 }
 function class$(name) {
   return attribute("class", name);
@@ -2144,6 +2316,25 @@ function text(content) {
 }
 function none2() {
   return new Text("");
+}
+function flatten_fragment_elements(elements) {
+  return fold_right(
+    elements,
+    toList([]),
+    (new_elements, element2) => {
+      if (element2 instanceof Fragment) {
+        let fr_elements = element2.elements;
+        return append(fr_elements, new_elements);
+      } else {
+        let el2 = element2;
+        return prepend(el2, new_elements);
+      }
+    }
+  );
+}
+function fragment(elements) {
+  let _pipe = flatten_fragment_elements(elements);
+  return new Fragment(_pipe, "");
 }
 
 // build/dev/javascript/lustre/lustre/internals/runtime.mjs
@@ -2230,7 +2421,7 @@ function createElementNode({ prev, next, dispatch, stack }) {
   const prevHandlers = canMorph ? new Set(handlersForEl.keys()) : null;
   const prevAttributes = canMorph ? new Set(Array.from(prev.attributes, (a) => a.name)) : null;
   let className = null;
-  let style = null;
+  let style2 = null;
   let innerHTML = null;
   for (const attr of next.attrs) {
     const name = attr[0];
@@ -2260,7 +2451,7 @@ function createElementNode({ prev, next, dispatch, stack }) {
     } else if (name === "class") {
       className = className === null ? value : className + " " + value;
     } else if (name === "style") {
-      style = style === null ? value : style + value;
+      style2 = style2 === null ? value : style2 + value;
     } else if (name === "dangerous-unescaped-html") {
       innerHTML = value;
     } else {
@@ -2277,8 +2468,8 @@ function createElementNode({ prev, next, dispatch, stack }) {
     if (canMorph)
       prevAttributes.delete("class");
   }
-  if (style !== null) {
-    el2.setAttribute("style", style);
+  if (style2 !== null) {
+    el2.setAttribute("style", style2);
     if (canMorph)
       prevAttributes.delete("style");
   }
@@ -2604,8 +2795,14 @@ function start3(app, selector, flags) {
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
+function h1(attrs, children) {
+  return element("h1", attrs, children);
+}
 function div(attrs, children) {
   return element("div", attrs, children);
+}
+function span(attrs, children) {
+  return element("span", attrs, children);
 }
 function button(attrs, children) {
   return element("button", attrs, children);
@@ -2633,7 +2830,7 @@ function on_keydown(msg) {
 
 // build/dev/javascript/gleam_stdlib/gleam/uri.mjs
 var Uri = class extends CustomType {
-  constructor(scheme, userinfo, host, port, path, query, fragment) {
+  constructor(scheme, userinfo, host, port, path, query, fragment2) {
     super();
     this.scheme = scheme;
     this.userinfo = userinfo;
@@ -2641,7 +2838,7 @@ var Uri = class extends CustomType {
     this.port = port;
     this.path = path;
     this.query = query;
-    this.fragment = fragment;
+    this.fragment = fragment2;
   }
 };
 function regex_submatches(pattern, string3) {
@@ -2749,13 +2946,13 @@ function do_parse(uri_string) {
       let authority_with_slashes = matches.tail.tail.head;
       let path2 = matches.tail.tail.tail.tail.head;
       let query_with_question_mark = matches.tail.tail.tail.tail.tail.head;
-      let fragment2 = matches.tail.tail.tail.tail.tail.tail.tail.head;
+      let fragment3 = matches.tail.tail.tail.tail.tail.tail.tail.head;
       return [
         scheme2,
         authority_with_slashes,
         path2,
         query_with_question_mark,
-        fragment2
+        fragment3
       ];
     } else {
       return [new None(), new None(), new None(), new None(), new None()];
@@ -2765,7 +2962,7 @@ function do_parse(uri_string) {
   let authority = $[1];
   let path = $[2];
   let query = $[3];
-  let fragment = $[4];
+  let fragment2 = $[4];
   let scheme$1 = noneify_empty_string(scheme);
   let path$1 = unwrap(path, "");
   let query$1 = noneify_query(query);
@@ -2774,7 +2971,7 @@ function do_parse(uri_string) {
   let host = $1[1];
   let port = $1[2];
   let fragment$1 = (() => {
-    let _pipe = fragment;
+    let _pipe = fragment2;
     let _pipe$1 = to_result(_pipe, void 0);
     let _pipe$2 = try$(_pipe$1, pop_grapheme2);
     let _pipe$3 = map3(_pipe$2, second);
@@ -2796,8 +2993,8 @@ function to_string6(uri) {
   let parts = (() => {
     let $ = uri.fragment;
     if ($ instanceof Some) {
-      let fragment = $[0];
-      return toList(["#", fragment]);
+      let fragment2 = $[0];
+      return toList(["#", fragment2]);
     } else {
       return toList([]);
     }
@@ -3305,6 +3502,31 @@ var UserChangedModalState = class extends CustomType {
     this[0] = x0;
   }
 };
+function alphabet() {
+  let _pipe = range(97, 122);
+  let _pipe$1 = filter_map(_pipe, utf_codepoint);
+  let _pipe$2 = utf_codepoint_list_to_string(_pipe$1);
+  let _pipe$3 = graphemes(_pipe$2);
+  return fold(
+    _pipe$3,
+    new$(),
+    (res, letter) => {
+      return insert(res, letter, new Pending());
+    }
+  );
+}
+function init_model() {
+  return new Model(
+    toList([]),
+    "",
+    "",
+    toList([]),
+    alphabet(),
+    "",
+    new Playing(),
+    new Closed()
+  );
+}
 function delay2(amount, msg) {
   return from2(
     (dispatch) => {
@@ -3313,6 +3535,19 @@ function delay2(amount, msg) {
       });
     }
   );
+}
+function get_random_word(words) {
+  let $ = (() => {
+    let _pipe = words;
+    let _pipe$1 = from_list2(_pipe);
+    return at(_pipe$1, random(length(words)));
+  })();
+  if ($.isOk()) {
+    let word = $[0];
+    return word;
+  } else {
+    return "";
+  }
 }
 var guess_max = 5;
 var not_word_err = "Not a word";
@@ -3325,7 +3560,10 @@ function update_end_game_modal(model, msg) {
     if (state instanceof Closed) {
       return new Ok(
         [
-          model.withFields({ end_game_modal: state, game_state: new Playing() }),
+          init_model().withFields({
+            words: model.words,
+            word: get_random_word(model.words)
+          }),
           none()
         ]
       );
@@ -3338,12 +3576,10 @@ function update_end_game_modal(model, msg) {
     return new Error(void 0);
   }
 }
-function handle_close_transition(_) {
-  debug("handling close");
+function handle_close(_) {
   return new Ok(new UserChangedModalState(new Closed()));
 }
 function end_game_modal(model) {
-  debug(model.end_game_modal);
   let $ = !isEqual(model.end_game_modal, new Closed());
   if ($) {
     return div(
@@ -3356,7 +3592,7 @@ function end_game_modal(model) {
           } else if ($1 instanceof Transition) {
             return toList([
               class$("ease-out"),
-              on2("animationend", handle_close_transition)
+              on2("animationend", handle_close)
             ]);
           } else {
             return toList([]);
@@ -3366,11 +3602,69 @@ function end_game_modal(model) {
       toList([
         div(
           toList([class$("end-game-container")]),
-          toList([text("Done")])
-        ),
-        button(
-          toList([on_click(new UserChangedModalState(new Transition()))]),
-          toList([text("Close")])
+          toList([
+            (() => {
+              let $1 = model.game_state;
+              if ($1 instanceof Won) {
+                return fragment(
+                  toList([
+                    h1(
+                      toList([]),
+                      toList([text("Congratulations!")])
+                    ),
+                    span(
+                      toList([]),
+                      toList([
+                        text(
+                          "You guessed the word in " + to_string2(
+                            length(model.guesses)
+                          ) + (() => {
+                            let $2 = length(model.guesses);
+                            if ($2 === 1) {
+                              return " try";
+                            } else {
+                              return " tries";
+                            }
+                          })()
+                        )
+                      ])
+                    )
+                  ])
+                );
+              } else {
+                return fragment(
+                  toList([
+                    h1(toList([]), toList([text("Game Over")])),
+                    span(
+                      toList([]),
+                      toList([
+                        text('The word was "' + model.word + '"')
+                      ])
+                    )
+                  ])
+                );
+              }
+            })(),
+            span(
+              toList([class$("retry")]),
+              toList([text("Replay")])
+            ),
+            button(
+              toList([
+                class$("retry-button"),
+                on_click(new UserChangedModalState(new Transition()))
+              ]),
+              toList([
+                span(
+                  toList([
+                    class$("material-symbols-outlined"),
+                    style(toList([["font-size", "60px"]]))
+                  ]),
+                  toList([text("replay")])
+                )
+              ])
+            )
+          ])
         )
       ])
     );
@@ -3379,11 +3673,94 @@ function end_game_modal(model) {
   }
 }
 
+// build/dev/javascript/wordle_gleam_demo/components/keyboard.mjs
+var keys2 = toList(["QWERTYUIOP", "ASDFGHJKL", "oZXCVBNMx"]);
+function keyboard(model) {
+  return div(
+    toList([class$("keyboard")]),
+    map2(
+      keys2,
+      (row) => {
+        return div(
+          toList([class$("keyboard-row")]),
+          map2(
+            split3(row, ""),
+            (letter) => {
+              if (letter === "o") {
+                return button(
+                  toList([
+                    class$("key"),
+                    class$("func-key"),
+                    class$("default-color"),
+                    on_click(new UserSentGameInput("Enter"))
+                  ]),
+                  toList([text("ENTER")])
+                );
+              } else if (letter === "x") {
+                return button(
+                  toList([
+                    class$("key"),
+                    class$("func-key"),
+                    class$("default-color"),
+                    on_click(new UserSentGameInput("Backspace"))
+                  ]),
+                  toList([
+                    span(
+                      toList([
+                        class$("material-symbols-outlined"),
+                        style(toList([["font-size", "2rem"]]))
+                      ]),
+                      toList([text("backspace")])
+                    )
+                  ])
+                );
+              } else {
+                return button(
+                  (() => {
+                    let _pipe = (() => {
+                      let $ = get(
+                        model.used_letters,
+                        lowercase2(letter)
+                      );
+                      if ($.isOk()) {
+                        let status = $[0];
+                        if (status instanceof Correct) {
+                          return toList([class$("correct")]);
+                        } else if (status instanceof WrongPos) {
+                          return toList([class$("wrong-pos")]);
+                        } else if (status instanceof Wrong) {
+                          return toList([class$("wrong")]);
+                        } else {
+                          return toList([class$("default-color")]);
+                        }
+                      } else {
+                        return toList([class$("default-color")]);
+                      }
+                    })();
+                    return append(
+                      _pipe,
+                      toList([
+                        class$("key"),
+                        on_click(new UserSentGameInput(letter))
+                      ])
+                    );
+                  })(),
+                  toList([text(letter)])
+                );
+              }
+            }
+          )
+        );
+      }
+    )
+  );
+}
+
 // build/dev/javascript/wordle_gleam_demo/components/word_grid.mjs
-function add_new_guess(guesses, guess, word) {
+function calculate_guess(guesses, guess, word) {
   let guess_letters = graphemes(guess);
   let word_letters = graphemes(word);
-  let _pipe = map22(
+  return map22(
     guess_letters,
     word_letters,
     (g, w) => {
@@ -3399,12 +3776,28 @@ function add_new_guess(guesses, guess, word) {
       }
     }
   );
-  let _pipe$1 = ((g) => {
-    return toList([g]);
-  })(_pipe);
-  return ((_capture) => {
-    return append(guesses, _capture);
-  })(_pipe$1);
+}
+function update_letters(guess, used_letters) {
+  return fold(
+    guess,
+    used_letters,
+    (res, guess_letter) => {
+      let $ = get(res, guess_letter.letter);
+      if ($.isOk()) {
+        let status = $[0];
+        let $1 = guess_letter.status;
+        if (status instanceof Correct) {
+          return res;
+        } else if ($1 instanceof Wrong && status instanceof WrongPos) {
+          return res;
+        } else {
+          return insert(res, guess_letter.letter, guess_letter.status);
+        }
+      } else {
+        return insert(res, guess_letter.letter, guess_letter.status);
+      }
+    }
+  );
 }
 function handle_guess(model) {
   let $ = length3(model.guess);
@@ -3423,10 +3816,22 @@ function handle_guess(model) {
         return new Playing();
       }
     })();
+    let checked_guess = calculate_guess(model.guesses, model.guess, model.word);
     return model.withFields({
       guess: "",
-      guesses: add_new_guess(model.guesses, model.guess, model.word),
+      guesses: (() => {
+        let _pipe = checked_guess;
+        let _pipe$1 = ((g2) => {
+          return toList([g2]);
+        })(_pipe);
+        return ((_capture) => {
+          return append(model.guesses, _capture);
+        })(
+          _pipe$1
+        );
+      })(),
       game_state: state,
+      used_letters: update_letters(checked_guess, model.used_letters),
       end_game_modal: (() => {
         if (state instanceof Playing) {
           return new Closed();
@@ -3451,7 +3856,7 @@ function get_alpha(input) {
     throw makeError(
       "assignment_no_match",
       "components/word_grid",
-      96,
+      114,
       "get_alpha",
       "Assignment pattern did not match",
       { value: $ }
@@ -3506,22 +3911,6 @@ function update_grid(model, msg) {
     }
   } else {
     return new Error(void 0);
-  }
-}
-function notification(error) {
-  let $ = error !== "";
-  if ($) {
-    return div(
-      toList([class$("overlay")]),
-      toList([
-        div(
-          toList([class$("notification-container")]),
-          toList([text(error)])
-        )
-      ])
-    );
-  } else {
-    return none2();
   }
 }
 function word_grid(model) {
@@ -3581,7 +3970,7 @@ function word_grid(model) {
                       if ($ instanceof Correct) {
                         return toList([class$("correct")]);
                       } else if ($ instanceof WrongPos) {
-                        return toList([class$("wrong_pos")]);
+                        return toList([class$("wrong-pos")]);
                       } else if ($ instanceof Wrong) {
                         return toList([class$("wrong")]);
                       } else {
@@ -3596,25 +3985,12 @@ function word_grid(model) {
           );
         }
       );
-      return prepend2(_pipe, notification(model.error));
+      return append(_pipe, toList([keyboard(model)]));
     })()
   );
 }
 
 // build/dev/javascript/wordle_gleam_demo/wordle_gleam_demo.mjs
-function get_random_word(words) {
-  let $ = (() => {
-    let _pipe = words;
-    let _pipe$1 = from_list2(_pipe);
-    return at(_pipe$1, random(length(words)));
-  })();
-  if ($.isOk()) {
-    let word = $[0];
-    return word;
-  } else {
-    return "";
-  }
-}
 function update_api(model, msg) {
   if (msg instanceof ApiReturnedWords && msg[0].isOk()) {
     let response = msg[0][0];
@@ -3655,19 +4031,23 @@ function get_words() {
   );
 }
 function init2(_) {
-  return [
-    new Model(
-      toList([]),
-      "",
-      "",
-      toList([]),
-      toList([]),
-      "",
-      new Playing(),
-      new Closed()
-    ),
-    get_words()
-  ];
+  return [init_model(), get_words()];
+}
+function notification(error) {
+  let $ = error !== "";
+  if ($) {
+    return div(
+      toList([class$("overlay")]),
+      toList([
+        div(
+          toList([class$("notification-container")]),
+          toList([text(error)])
+        )
+      ])
+    );
+  } else {
+    return none2();
+  }
 }
 function view(model) {
   let _pipe = model.word;
@@ -3680,7 +4060,7 @@ function view(model) {
         return new UserSentGameInput(var0);
       })
     ]),
-    toList([word_grid(model), end_game_modal(model)])
+    toList([word_grid(model), end_game_modal(model), notification(model.error)])
   );
 }
 function main() {
@@ -3690,7 +4070,7 @@ function main() {
     throw makeError(
       "assignment_no_match",
       "wordle_gleam_demo",
-      23,
+      21,
       "main",
       "Assignment pattern did not match",
       { value: $ }

@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/int
 import gleam/io
 import gleam/list
 import lustre/attribute
@@ -7,8 +8,8 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import shared.{
-  type Model, type Msg, Closed, Model, Open, Playing, Transition,
-  UserChangedModalState,
+  type Model, type Msg, Closed, Lost, Model, Open, Playing, Transition,
+  UserChangedModalState, Won, get_random_word, init_model,
 }
 
 pub fn update_end_game_modal(
@@ -20,7 +21,11 @@ pub fn update_end_game_modal(
       case state {
         Closed ->
           Ok(#(
-            Model(..model, end_game_modal: state, game_state: Playing),
+            Model(
+              ..init_model(),
+              words: model.words,
+              word: get_random_word(model.words),
+            ),
             effect.none(),
           ))
         _ -> Ok(#(Model(..model, end_game_modal: state), effect.none()))
@@ -29,14 +34,11 @@ pub fn update_end_game_modal(
   }
 }
 
-fn handle_close_transition(_event) -> Result(Msg, List(dynamic.DecodeError)) {
-  io.debug("handling close")
+fn handle_close(_event) -> Result(Msg, List(dynamic.DecodeError)) {
   Ok(UserChangedModalState(Closed))
 }
 
 pub fn end_game_modal(model: Model) -> element.Element(Msg) {
-  io.debug(model.end_game_modal)
-
   case model.end_game_modal != Closed {
     True ->
       html.div(
@@ -44,16 +46,51 @@ pub fn end_game_modal(model: Model) -> element.Element(Msg) {
           Open -> [attribute.class("ease-in")]
           Transition -> [
             attribute.class("ease-out"),
-            event.on("animationend", handle_close_transition),
+            event.on("animationend", handle_close),
           ]
           Closed -> []
         }),
         [
           html.div([attribute.class("end-game-container")], [
-            element.text("Done"),
-          ]),
-          html.button([event.on_click(UserChangedModalState(Transition))], [
-            element.text("Close"),
+            case model.game_state {
+              Won ->
+                element.fragment([
+                  html.h1([], [element.text("Congratulations!")]),
+                  html.span([], [
+                    element.text(
+                      "You guessed the word in "
+                      <> int.to_string(list.length(model.guesses))
+                      <> case list.length(model.guesses) {
+                        1 -> " try"
+                        _ -> " tries"
+                      },
+                    ),
+                  ]),
+                ])
+              _ ->
+                element.fragment([
+                  html.h1([], [element.text("Game Over")]),
+                  html.span([], [
+                    element.text("The word was \"" <> model.word <> "\""),
+                  ]),
+                ])
+            },
+            html.span([attribute.class("retry")], [element.text("Replay")]),
+            html.button(
+              [
+                attribute.class("retry-button"),
+                event.on_click(UserChangedModalState(Transition)),
+              ],
+              [
+                html.span(
+                  [
+                    attribute.class("material-symbols-outlined"),
+                    attribute.style([#("font-size", "60px")]),
+                  ],
+                  [element.text("replay")],
+                ),
+              ],
+            ),
           ]),
         ],
       )

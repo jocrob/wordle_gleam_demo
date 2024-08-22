@@ -1,9 +1,7 @@
 import components/end_game_modal.{end_game_modal, update_end_game_modal}
 import components/word_grid.{update_grid, word_grid}
 import gleam/dynamic
-import gleam/int
 import gleam/io
-import gleam/iterator
 import gleam/list
 import gleam/result
 import lustre
@@ -15,7 +13,7 @@ import lustre/event
 import lustre_http
 import shared.{
   type Model, type Msg, ApiReturnedWords, Closed, ErrorDelayFinished, Model,
-  Playing, UserSentGameInput,
+  Playing, UserSentGameInput, get_random_word, init_model,
 }
 
 pub fn main() {
@@ -26,19 +24,7 @@ pub fn main() {
 }
 
 fn init(_flags) -> #(Model, effect.Effect(Msg)) {
-  #(
-    Model(
-      words: [],
-      word: "",
-      guess: "",
-      guesses: [],
-      used_letters: [],
-      error: "",
-      game_state: Playing,
-      end_game_modal: Closed,
-    ),
-    get_words(),
-  )
+  #(init_model(), get_words())
 }
 
 pub fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
@@ -65,24 +51,24 @@ fn update_api(
   }
 }
 
-fn get_random_word(words: List(String)) {
-  case
-    {
-      words
-      |> iterator.from_list
-      |> iterator.at(int.random(list.length(words)))
-    }
-  {
-    Ok(word) -> word
-    Error(_) -> ""
-  }
-}
-
 fn get_words() -> effect.Effect(Msg) {
   let decoder = dynamic.list(of: dynamic.string)
   let expect = lustre_http.expect_json(decoder, ApiReturnedWords)
 
   lustre_http.get("http://localhost:1234/priv/static/words.json", expect)
+}
+
+fn notification(error: String) -> element.Element(Msg) {
+  case error != "" {
+    True -> {
+      html.div([attribute.class("overlay")], [
+        html.div([attribute.class("notification-container")], [
+          element.text(error),
+        ]),
+      ])
+    }
+    False -> element.none()
+  }
 }
 
 fn view(model: Model) -> element.Element(Msg) {
@@ -94,6 +80,6 @@ fn view(model: Model) -> element.Element(Msg) {
       attribute.attribute("tabindex", "0"),
       event.on_keydown(UserSentGameInput),
     ],
-    [word_grid(model), end_game_modal(model)],
+    [word_grid(model), end_game_modal(model), notification(model.error)],
   )
 }

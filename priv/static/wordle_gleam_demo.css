@@ -9,12 +9,14 @@ body {
     outline: none;
     display: flex;
     justify-content: center;
+    margin-top: 10vh;
 }
 
 .grid_row {
     display: flex;
     flex-direction: row;
     margin-bottom: 1.5px;
+    justify-content: center;
 }
 
 .grid_letter_container {
@@ -32,7 +34,7 @@ body {
     color: white;
 }
 
-.wrong_pos {
+.wrong-pos {
     background-color: #b59f3b;
     border-color: #b59f3b;
 }
@@ -44,6 +46,11 @@ body {
 
 .wrong {
     background-color: #3a3a3c;
+    border-color: #3a3a3c;
+}
+
+.default-color {
+    background-color: #818384;
 }
 
 .overlay {
@@ -52,9 +59,8 @@ body {
     top: 10px;
     display: flex;
     justify-content: center;
-    left: 0;
-    right: 0;
     width: 100%;
+    height: 100%;
 }
 
 .notification-container {
@@ -67,6 +73,7 @@ body {
     font-family: sans-serif;
     font-weight: bold;
     width: 10rem;
+    height: 2rem;
     padding: 10px 0;
     border-radius: 5px;
     animation-duration: 1.5s;
@@ -76,6 +83,7 @@ body {
 
 .end-game-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: black;
@@ -83,8 +91,59 @@ body {
     font-size: 1.25em;
     font-family: sans-serif;
     font-weight: bold;
-    width: 20rem;
-    padding: 10px 0;
+    padding: 10px 30px 40px 30px;
+    border: 3px solid;
+    border-color: #3a3a3c;
+    border-radius: 10px;
+    height: 15rem;
+    margin-top: 30vh;
+}
+
+.retry {
+    margin-top: 30px;
+}
+
+.retry-button {
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.retry-icon {
+    font-size: 60px;
+}
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.keyboard-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.key {
+    font-size: 1.75rem;
+    width: 3.5rem;
+    height: 5rem;
+    margin: 5px 3px;
+    font-family: sans-serif;
+    font-weight: bold;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.func-key {
+    width: 5.5rem;
+    font-size: 1rem;
 }
 
 .ease-in {
