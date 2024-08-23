@@ -1,5 +1,7 @@
 # wordle_gleam_demo
 
+<https://jocrob.github.io/wordle_gleam_demo/>
+
 [![Package Version](https://img.shields.io/hexpm/v/wordle_gleam_demo)](https://hex.pm/packages/wordle_gleam_demo)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/wordle_gleam_demo/)
 
