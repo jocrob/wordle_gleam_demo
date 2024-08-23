@@ -1,6 +1,5 @@
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/iterator
 import gleam/list
 import gleam/string
@@ -82,7 +81,7 @@ pub fn delay(amount: Int, msg: Msg) -> effect.Effect(Msg) {
 }
 
 @external(javascript, "./app.ffi.mjs", "delay")
-fn do_delay(amount: Int, cb: fn() -> Nil) -> Nil {
+fn do_delay(_: Int, _: fn() -> Nil) -> Nil {
   Nil
 }
 

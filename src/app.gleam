@@ -12,8 +12,8 @@ import lustre/element/html
 import lustre/event
 import lustre_http
 import shared.{
-  type Model, type Msg, ApiReturnedWords, Closed, ErrorDelayFinished, Model,
-  Playing, UserSentGameInput, get_random_word, init_model,
+  type Model, type Msg, ApiReturnedWords, ErrorDelayFinished, Model,
+  UserSentGameInput, get_random_word, init_model,
 }
 
 pub fn main() {

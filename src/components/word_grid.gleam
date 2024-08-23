@@ -1,8 +1,6 @@
 import components/keyboard.{keyboard}
 import gleam/dict.{type Dict}
-import gleam/io
 import gleam/list
-import gleam/pair
 import gleam/regex
 import gleam/string
 import lustre/attribute
@@ -66,7 +64,7 @@ fn handle_guess(model: Model) {
         _, _ -> Playing
       }
       let checked_guess =
-        calculate_guess(model.guesses, model.guess, model.word)
+        calculate_guess(model.guess, model.word)
       Model(
         ..model,
         guess: "",
@@ -85,7 +83,7 @@ fn handle_guess(model: Model) {
   }
 }
 
-fn calculate_guess(guesses: List(List(GridLetter)), guess: String, word: String) {
+fn calculate_guess(guess: String, word: String) {
   let guess_letters = string.to_graphemes(guess)
   let word_letters = string.to_graphemes(word)
 

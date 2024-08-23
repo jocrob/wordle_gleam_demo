@@ -1,6 +1,5 @@
 import gleam/dynamic
 import gleam/int
-import gleam/io
 import gleam/list
 import lustre/attribute
 import lustre/effect
@@ -8,7 +7,7 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import shared.{
-  type Model, type Msg, Closed, Lost, Model, Open, Playing, Transition,
+  type Model, type Msg, Closed, Model, Open, Transition,
   UserChangedModalState, Won, get_random_word, init_model,
 }
 
