@@ -12,7 +12,7 @@ import lustre/event
 import lustre_http
 import shared.{
   type Model, type Msg, ApiReturnedWords, ErrorDelayFinished, Model,
-  UserSentGameInput, get_random_word, init_model, get_host
+  UserSentGameInput, get_host, get_random_word, init_model,
 }
 
 pub fn main() {
