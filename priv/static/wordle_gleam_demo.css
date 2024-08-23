@@ -1,3 +1,16 @@
+html {
+
+    font-size: 0.9vw;
+
+    @media (max-width: 1300px) { 
+        font-size: 1.75vw;
+    }
+
+    @media (max-width: 700px) { 
+        font-size: 1.9vw;
+    }
+}
+
 body {
     background-color: black;
     overflow: hidden;
@@ -25,7 +38,7 @@ body {
     align-items: center;
     height: 1.5em;
     width: 1.5em;
-    margin: 3px;
+    margin: 0.2rem;
     border: 3px solid;
     border-color: #3a3a3c;
     font-size: 3em;
@@ -133,12 +146,14 @@ body {
     font-size: 1.75rem;
     width: 3.5rem;
     height: 5rem;
-    margin: 5px 3px;
+    margin: 0.3rem 0.2rem;
     font-family: sans-serif;
     font-weight: bold;
-    border-radius: 5px;
+    border-radius: 0.5rem;
+    border: none;
     color: white;
     cursor: pointer;
+    padding: inherit
 }
 
 .func-key {
