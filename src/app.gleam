@@ -13,7 +13,7 @@ import lustre/event
 import lustre_http
 import shared.{
   type Model, type Msg, ApiReturnedWords, ErrorDelayFinished, Model,
-  UserSentGameInput, get_random_word, init_model,
+  UserSentGameInput, get_random_word, init_model, get_host
 }
 
 pub fn main() {
@@ -55,7 +55,10 @@ fn get_words() -> effect.Effect(Msg) {
   let decoder = dynamic.list(of: dynamic.string)
   let expect = lustre_http.expect_json(decoder, ApiReturnedWords)
 
-  lustre_http.get("http://localhost:1234/priv/static/words.json", expect)
+  let words_path = get_host() <> "priv/static/words.json"
+  io.debug(words_path)
+
+  lustre_http.get(words_path, expect)
 }
 
 fn notification(error: String) -> element.Element(Msg) {

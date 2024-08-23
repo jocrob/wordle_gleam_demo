@@ -85,6 +85,11 @@ fn do_delay(_: Int, _: fn() -> Nil) -> Nil {
   Nil
 }
 
+@external(javascript, "./app.ffi.mjs", "getHost")
+pub fn get_host() -> String {
+  ""
+}
+
 pub fn get_random_word(words: List(String)) {
   case
     {
