@@ -7,8 +7,8 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import shared.{
-  type Model, type Msg, Closed, Model, Open, Transition,
-  UserChangedModalState, Won, get_random_word, init_model,
+  type Model, type Msg, Closed, Model, Open, Transition, UserChangedModalState,
+  Won, get_random_word, init_model,
 }
 
 pub fn update_end_game_modal(

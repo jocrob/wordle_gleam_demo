@@ -63,8 +63,7 @@ fn handle_guess(model: Model) {
         False, tries if tries == guess_max -> Lost
         _, _ -> Playing
       }
-      let checked_guess =
-        calculate_guess(model.guess, model.word)
+      let checked_guess = calculate_guess(model.guess, model.word)
       Model(
         ..model,
         guess: "",
