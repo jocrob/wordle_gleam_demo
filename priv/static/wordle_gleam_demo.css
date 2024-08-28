@@ -3,11 +3,11 @@ html {
     font-size: 0.9vw;
 
     @media (max-width: 1300px) { 
-        font-size: 1.75vw;
+        font-size: 1.4vw;
     }
 
     @media (max-width: 700px) { 
-        font-size: 1.9vw;
+        font-size: 2.0vw;
     }
 }
 
@@ -113,7 +113,7 @@ body {
 }
 
 .retry {
-    margin-top: 30px;
+    margin-top: 2vh;
 }
 
 .retry-button {
